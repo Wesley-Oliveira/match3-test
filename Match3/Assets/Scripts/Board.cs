@@ -7,14 +7,14 @@ public class Board : MonoBehaviour
     public int width;
     public int height;
     public GameObject tilePrefab;
-    public GameObject[] dots;
+    public GameObject[] chars;
     private BackgroundTile[,] allTiles;
-    public GameObject[,] allDots;
+    public GameObject[,] allChars;
 
     void Start()
     {
         allTiles = new BackgroundTile[width, height];
-        allDots = new GameObject[width, height];
+        allChars = new GameObject[width, height];
         SetUp();
     }
 
@@ -30,12 +30,12 @@ public class Board : MonoBehaviour
                 backgroundTile.transform.parent = this.transform;
                 backgroundTile.name = "( " + i + ", " + j + ") - BG";
 
-                int dotToUse = Random.Range(0, dots.Length);
-                GameObject dot = Instantiate(dots[dotToUse], tempPosition, Quaternion.identity) as GameObject;
+                int dotToUse = Random.Range(0, chars.Length);
+                GameObject dot = Instantiate(chars[dotToUse], tempPosition, Quaternion.identity) as GameObject;
                 dot.transform.parent = this.transform;
                 dot.name = "( " + i + ", " + j + ") - CH";
 
-                allDots[i, j] = dot;
+                allChars[i, j] = dot;
             }
         }
     }

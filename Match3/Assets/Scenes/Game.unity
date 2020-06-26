@@ -249,7 +249,7 @@ MonoBehaviour:
   height: 10
   tilePrefab: {fileID: 6030238547272710023, guid: 6245a00f2217f9d4da949c4fe11dccb9,
     type: 3}
-  dots:
+  chars:
   - {fileID: 1680027051128372086, guid: a4d31a2e6ad6a82479d8853902aaa106, type: 3}
   - {fileID: 3142119101642358022, guid: 9e74f45b52d9e5449a57f55cd2f9949a, type: 3}
   - {fileID: 1241988390479188216, guid: 262c67a10ca20ec4fbea2b7002c58381, type: 3}

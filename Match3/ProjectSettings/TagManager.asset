@@ -3,7 +3,14 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Char_Apple
+  - Char_Bread
+  - Char_Coconut
+  - Char_Milk
+  - Char_Orange
+  - Char_Spinach
+  - Char_Star
   layers:
   - Default
   - TransparentFX
