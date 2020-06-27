@@ -9,11 +9,6 @@ using UnityEngine;
 /// Isso ocorre pq ele não está atualizando a posição atual do char selecionado
 /// 0 1 0
 /// 1 0 0 - deveria ocorrer isto, mams está ocorrendo 0 0 0
-/// 
-/// 2. Quando clicar uma vez para arrastar, enquanto está realizando a mudança de uma posição para outra, se houver interação com outra peça, vai realizar o movimento
-/// Ou seja, é possível ter duas peças na mesma posição ao mesmo tempo, para concertar, basta adicionar uma variável de verificação
-/// MouseDown apertou = true
-/// MouseUp if(apertou){executa a transição e etc}... no final apertou = false
 /// </BugList>
 public class CharController : MonoBehaviour
 {
@@ -36,20 +31,23 @@ public class CharController : MonoBehaviour
     public float swipeAngle = 0;
     public float swipeResist = 1f;
 
+    private Finder finderMatches;
+
     void Start()
     {
         board = FindObjectOfType<Board>() as Board;
-        targetX = (int)transform.position.x;
-        targetY = (int)transform.position.y;
-        column = targetX;
-        row = targetY;
-        previousColumn = column;
-        previousRow = row;
+        finderMatches = FindObjectOfType<Finder>() as Finder;
+        //targetX = (int)transform.position.x;
+        //targetY = (int)transform.position.y;
+        //column = targetX;
+        //row = targetY;
+        //previousColumn = column;
+        //previousRow = row;
     }
 
     void Update()
     {
-        FindMatches();
+        //FindMatches();
 
         if (isMatched)
         {
@@ -69,6 +67,8 @@ public class CharController : MonoBehaviour
             
             if(board.allChars[column, row] != this.gameObject)
                 board.allChars[column, row] = this.gameObject;
+
+            finderMatches.FindAllMatches();
         }
         else
         {
@@ -87,6 +87,8 @@ public class CharController : MonoBehaviour
 
             if (board.allChars[column, row] != this.gameObject)
                 board.allChars[column, row] = this.gameObject;
+
+            finderMatches.FindAllMatches();
         }
         else
         {
@@ -108,6 +110,9 @@ public class CharController : MonoBehaviour
                 otherChar.GetComponent<CharController>().column = column;
                 row = previousRow;
                 column = previousColumn;
+
+                yield return new WaitForSeconds(.5f);
+                board.currentState = GameState.move;
             }
             else
             {
@@ -119,13 +124,17 @@ public class CharController : MonoBehaviour
 
     private void OnMouseDown()
     {
-        firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        if (board.currentState == GameState.move)        
+            firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
     }
 
     private void OnMouseUp()
     {
-        finalTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        CalculateAngle();
+        if (board.currentState == GameState.move)
+        {
+            finalTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            CalculateAngle();
+        }
     }
 
     void CalculateAngle()
@@ -137,6 +146,11 @@ public class CharController : MonoBehaviour
                 finalTouchPosition.x - firstTouchPosition.x
             ) * 180 / Mathf.PI;
             MovePieces();
+            board.currentState = GameState.wait;
+        }
+        else
+        {
+            board.currentState = GameState.move;
         }
     }
 
@@ -146,6 +160,8 @@ public class CharController : MonoBehaviour
         {
             // Right Swipe
             otherChar = board.allChars[column + 1, row];
+            previousRow = row;
+            previousColumn = column;
             otherChar.GetComponent<CharController>().column -= 1;
             column += 1;
         }
@@ -153,6 +169,8 @@ public class CharController : MonoBehaviour
         {
             // Up Swipe
             otherChar = board.allChars[column, row + 1];
+            previousRow = row;
+            previousColumn = column;
             otherChar.GetComponent<CharController>().row -= 1;
             row += 1;
         }
@@ -160,6 +178,8 @@ public class CharController : MonoBehaviour
         {
             // Left Swipe
             otherChar = board.allChars[column - 1, row];
+            previousRow = row;
+            previousColumn = column;
             otherChar.GetComponent<CharController>().column += 1;
             column -= 1;
         }
@@ -167,13 +187,15 @@ public class CharController : MonoBehaviour
         {
             // Down Swipe
             otherChar = board.allChars[column, row - 1];
+            previousRow = row;
+            previousColumn = column;
             otherChar.GetComponent<CharController>().row += 1;
             row -= 1;
         }
         StartCoroutine(CheckMove());
     }
     
-    void FindMatches()
+    /*void FindMatches()
     {
         if(column > 0 && column < board.width - 1)
         {
@@ -210,5 +232,5 @@ public class CharController : MonoBehaviour
                 }
             }
         }
-    }
+    }*/
 }

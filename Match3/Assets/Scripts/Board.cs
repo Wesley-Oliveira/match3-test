@@ -6,17 +6,28 @@ using UnityEngine;
 /// Procurar uma solução mais otimizada para trabalhar com matrizes
 /// Preocupação DESEMPENHO
 /// </Refactor>
+
+public enum GameState
+{
+    wait,
+    move
+}
+
 public class Board : MonoBehaviour
 {
+    public GameState currentState = GameState.move;
     public int width;
     public int height;
+    public int offSet;
     public GameObject tilePrefab;
     public GameObject[] chars;
     private BackgroundTile[,] allTiles;
     public GameObject[,] allChars;
 
+    private Finder findMatches;
     void Start()
     {
+        findMatches = FindObjectOfType<Finder>() as Finder;
         allTiles = new BackgroundTile[width, height];
         allChars = new GameObject[width, height];
         SetUp();
@@ -29,10 +40,10 @@ public class Board : MonoBehaviour
         {
             for (int j = 0; j < height; j++)
             {
-                Vector2 tempPosition = new Vector2(i, j);
+                Vector2 tempPosition = new Vector2(i, j + offSet);
                 GameObject backgroundTile = Instantiate(tilePrefab, tempPosition, Quaternion.identity) as GameObject;
                 backgroundTile.transform.parent = this.transform;
-                backgroundTile.name = "( " + i + ", " + j + ") - BG";
+                backgroundTile.name = "(" + i + ", " + j + ") - BG";
 
                 int charToUse = Random.Range(0, chars.Length);
 
@@ -46,8 +57,10 @@ public class Board : MonoBehaviour
                 maxIterantions = 0;
 
                 GameObject char_ = Instantiate(chars[charToUse], tempPosition, Quaternion.identity) as GameObject;
+                char_.GetComponent<CharController>().row = j;
+                char_.GetComponent<CharController>().column = i;
                 char_.transform.parent = this.transform;
-                char_.name = "( " + i + ", " + j + ") - CH";
+                char_.name = "(" + i + ", " + j + ") - CH";
 
                 allChars[i, j] = char_;
             }
@@ -80,6 +93,7 @@ public class Board : MonoBehaviour
     {
         if(allChars[column, row].GetComponent<CharController>().isMatched)
         {
+            findMatches.currentMatches.Remove(allChars[column, row]);
             Destroy(allChars[column, row]);
             allChars[column, row] = null;
         }
@@ -114,5 +128,58 @@ public class Board : MonoBehaviour
             nullCount = 0;
         }
         yield return new WaitForSeconds(.4f);
+        StartCoroutine(FillBoard());
+    }
+
+    private void RefilBoard()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if (allChars[i, j] == null)
+                {
+                    Vector2 tempPosition = new Vector2(i, j + offSet);
+                    int charToUse = Random.Range(0, chars.Length);
+                    GameObject piece = Instantiate(chars[charToUse], tempPosition, Quaternion.identity);
+                    piece.transform.parent = this.transform;
+                    piece.name = tempPosition + " - NewCH";
+                    allChars[i, j] = piece;
+                    piece.GetComponent<CharController>().row = j;
+                    piece.GetComponent<CharController>().column = i;
+                }
+            }
+        }
+    }
+
+    private bool MatchesOnBoard()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if (allChars[i, j] != null)
+                {
+                    if (allChars[i, j].GetComponent<CharController>().isMatched)
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private IEnumerator FillBoard()
+    {
+        RefilBoard();
+        yield return new WaitForSeconds(.5f);
+
+        while (MatchesOnBoard())
+        {
+            yield return new WaitForSeconds(.5f);
+            DestroyMatches();
+        }
+
+        yield return new WaitForSeconds(.5f);
+        currentState = GameState.move;
     }
 }
