@@ -65,7 +65,10 @@ public class CharController : MonoBehaviour
         {
             // Move Towards the target
             tempPosition = new Vector2(targetX, transform.position.y);
-            transform.position = Vector2.Lerp(transform.position, tempPosition, .4f);
+            transform.position = Vector2.Lerp(transform.position, tempPosition, .6f);
+            
+            if(board.allChars[column, row] != this.gameObject)
+                board.allChars[column, row] = this.gameObject;
         }
         else
         {
@@ -80,14 +83,16 @@ public class CharController : MonoBehaviour
         {
             // Move Towards the target
             tempPosition = new Vector2(transform.position.x, targetY);
-            transform.position = Vector2.Lerp(transform.position, tempPosition, .4f);
+            transform.position = Vector2.Lerp(transform.position, tempPosition, .6f);
+
+            if (board.allChars[column, row] != this.gameObject)
+                board.allChars[column, row] = this.gameObject;
         }
         else
         {
             // Directly set the position
             tempPosition = new Vector2(transform.position.x, targetY);
             transform.position = tempPosition;
-            board.allChars[column, row] = this.gameObject;
         }
     }
 

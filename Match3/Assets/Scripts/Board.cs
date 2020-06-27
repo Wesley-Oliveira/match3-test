@@ -90,6 +90,29 @@ public class Board : MonoBehaviour
         for (int i = 0; i < width; i++)
             for (int j = 0; j < height; j++)
                 if(allChars[i, j] != null)
-                    DestroyMatchesAt(i, j);                
+                    DestroyMatchesAt(i, j);
+
+        StartCoroutine(DecreaseRow());
+    }
+
+    private IEnumerator DecreaseRow()
+    {
+        int nullCount = 0;
+
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if (allChars[i, j] == null)
+                    nullCount++;
+                else if (nullCount > 0)
+                {
+                    allChars[i, j].GetComponent<CharController>().row -= nullCount;
+                    allChars[i, j] = null;
+                }
+            }
+            nullCount = 0;
+        }
+        yield return new WaitForSeconds(.4f);
     }
 }
