@@ -4,7 +4,6 @@ using UnityEngine;
 
 /// <Refactor>
 /// Procurar uma solução mais otimizada para trabalhar com matrizes
-/// Preocupação DESEMPENHO
 /// </Refactor>
 
 public enum GameState
@@ -23,6 +22,7 @@ public class Board : MonoBehaviour
     public GameObject[] chars;
     private BackgroundTile[,] allTiles;
     public GameObject[,] allChars;
+    public GameObject destroyEffect;
 
     private Finder findMatches;
     void Start()
@@ -33,7 +33,6 @@ public class Board : MonoBehaviour
         SetUp();
     }
 
-    // refactor this code block
     private void SetUp()
     {
         for(int i = 0; i < width; i++)
@@ -93,7 +92,7 @@ public class Board : MonoBehaviour
     {
         if(allChars[column, row].GetComponent<CharController>().isMatched)
         {
-            findMatches.currentMatches.Remove(allChars[column, row]);
+            Instantiate(destroyEffect, allChars[column, row].transform.position, Quaternion.identity);
             Destroy(allChars[column, row]);
             allChars[column, row] = null;
         }
@@ -105,7 +104,7 @@ public class Board : MonoBehaviour
             for (int j = 0; j < height; j++)
                 if(allChars[i, j] != null)
                     DestroyMatchesAt(i, j);
-
+        findMatches.currentMatches.Clear();
         StartCoroutine(DecreaseRow());
     }
 

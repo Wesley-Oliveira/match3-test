@@ -4,11 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <BugList>
-/// 1. Se um char estiver na ultima coluna da direita e o antipenultimo forem iguais, ao arrastar o antipenultimo em direção a direita do board faz um match
-/// Ou seja, com apenas dois chars, tá sendo gerado um match.
-/// Isso ocorre pq ele não está atualizando a posição atual do char selecionado
-/// 0 1 0
-/// 1 0 0 - deveria ocorrer isto, mams está ocorrendo 0 0 0
+///
 /// </BugList>
 public class CharController : MonoBehaviour
 {
@@ -37,24 +33,10 @@ public class CharController : MonoBehaviour
     {
         board = FindObjectOfType<Board>() as Board;
         finderMatches = FindObjectOfType<Finder>() as Finder;
-        //targetX = (int)transform.position.x;
-        //targetY = (int)transform.position.y;
-        //column = targetX;
-        //row = targetY;
-        //previousColumn = column;
-        //previousRow = row;
     }
 
     void Update()
     {
-        //FindMatches();
-
-        if (isMatched)
-        {
-            SpriteRenderer mySprite = GetComponent<SpriteRenderer>();
-            mySprite.color = new Color(1f, 1f, 1f, .2f);
-        }
-
         targetX = column;
         targetY = row;
 
@@ -194,43 +176,4 @@ public class CharController : MonoBehaviour
         }
         StartCoroutine(CheckMove());
     }
-    
-    /*void FindMatches()
-    {
-        if(column > 0 && column < board.width - 1)
-        {
-            GameObject leftChar1 = board.allChars[column - 1, row];
-            GameObject rightChar1 = board.allChars[column + 1, row];
-
-            // refactor this code block
-            if (leftChar1 != null && rightChar1 != null)
-            {
-                //Checking horizontal match 
-                if (leftChar1.tag == this.gameObject.tag && rightChar1.tag == this.gameObject.tag)
-                {
-                    leftChar1.GetComponent<CharController>().isMatched = true;
-                    rightChar1.GetComponent<CharController>().isMatched = true;
-                    isMatched = true;
-                }
-            }
-        }
-
-        if (row > 0 && row < board.height - 1)
-        {
-            GameObject upChar1 = board.allChars[column, row + 1];
-            GameObject downChar1 = board.allChars[column, row - 1];
-
-            // refactor this code block
-            if (upChar1 != null && downChar1 != null)
-            {
-                //Checking vertical match
-                if (upChar1.tag == this.gameObject.tag && downChar1.tag == this.gameObject.tag)
-                {
-                    upChar1.GetComponent<CharController>().isMatched = true;
-                    downChar1.GetComponent<CharController>().isMatched = true;
-                    isMatched = true;
-                }
-            }
-        }
-    }*/
 }

@@ -17,6 +17,21 @@ public class Finder : MonoBehaviour
         StartCoroutine(FindAllMatchesCo());
     }
 
+    private void AddToListAndMatch(GameObject char_)
+    {
+        if (!currentMatches.Contains(char_))
+            currentMatches.Add(char_);
+
+        char_.GetComponent<CharController>().isMatched = true;
+    }
+
+    private void GetNearbyPieces(GameObject char1, GameObject char2, GameObject char3)
+    {
+        AddToListAndMatch(char1);
+        AddToListAndMatch(char2);
+        AddToListAndMatch(char3);
+    }
+
     private IEnumerator FindAllMatchesCo()
     {
         yield return new WaitForSeconds(.2f);
@@ -25,37 +40,16 @@ public class Finder : MonoBehaviour
             for (int j = 0; j < board.height; j++)
             {
                 GameObject currentChar = board.allChars[i, j];
-
-                if(currentChar != null)
+                if (currentChar != null)
                 {
                     if(i > 0 && i < board.width - 1)
                     {
                         GameObject leftChar = board.allChars[i - 1, j];
                         GameObject rightChar = board.allChars[i + 1, j];
 
-                        if(leftChar != null && rightChar != null)
-                        {
+                        if (leftChar != null && rightChar != null)
                             if(leftChar.tag == currentChar.tag && rightChar.tag == currentChar.tag)
-                            {
-                                if (!currentMatches.Contains(leftChar))
-                                {
-                                    currentMatches.Add(leftChar);
-                                }
-                                leftChar.GetComponent<CharController>().isMatched = true;
-                                
-                                if (!currentMatches.Contains(rightChar))
-                                {
-                                    currentMatches.Add(rightChar);
-                                }
-                                rightChar.GetComponent<CharController>().isMatched = true;
-
-                                if (!currentMatches.Contains(currentChar))
-                                {
-                                    currentMatches.Add(currentChar);
-                                }
-                                currentChar.GetComponent<CharController>().isMatched = true;
-                            }
-                        }
+                                GetNearbyPieces(leftChar, currentChar, rightChar);
                     }
 
                     if (j > 0 && j < board.height - 1)
@@ -64,29 +58,8 @@ public class Finder : MonoBehaviour
                         GameObject downChar = board.allChars[i, j - 1];
 
                         if (upChar != null && downChar != null)
-                        {
                             if (upChar.tag == currentChar.tag && downChar.tag == currentChar.tag)
-                            {
-                                if (!currentMatches.Contains(upChar))
-                                {
-                                    currentMatches.Add(upChar);
-                                }
-                                upChar.GetComponent<CharController>().isMatched = true;
-
-                                if (!currentMatches.Contains(downChar))
-                                {
-                                    currentMatches.Add(downChar);
-                                }
-                                downChar.GetComponent<CharController>().isMatched = true;
-
-                                if (!currentMatches.Contains(currentChar))
-                                {
-                                    currentMatches.Add(currentChar);
-                                }
-                                currentChar.GetComponent<CharController>().isMatched = true;
-                            }
-
-                        }
+                                GetNearbyPieces(upChar, currentChar, downChar);                         
                     }
                 }
             }
