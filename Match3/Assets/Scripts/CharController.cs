@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <BugList>
-///
+/// Econtrar uma forma de não deixar o jogo morrer quando o jogador puxar um char para fora do tamanho do tabuleiro
 /// </BugList>
 public class CharController : MonoBehaviour
 {
@@ -46,8 +46,8 @@ public class CharController : MonoBehaviour
             // Move Towards the target
             tempPosition = new Vector2(targetX, transform.position.y);
             transform.position = Vector2.Lerp(transform.position, tempPosition, .6f);
-            
-            if(board.allChars[column, row] != this.gameObject)
+
+            if (board.allChars[column, row] != this.gameObject)
                 board.allChars[column, row] = this.gameObject;
 
             finderMatches.FindAllMatches();
@@ -100,13 +100,13 @@ public class CharController : MonoBehaviour
             {
                 board.DestroyMatches();
             }
-            otherChar = null;
         }
+        board.currentState = GameState.move;
     }
 
     private void OnMouseDown()
     {
-        if (board.currentState == GameState.move)        
+        if (board.currentState == GameState.move)
             firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
     }
 
@@ -127,8 +127,8 @@ public class CharController : MonoBehaviour
                 finalTouchPosition.y - firstTouchPosition.y,
                 finalTouchPosition.x - firstTouchPosition.x
             ) * 180 / Mathf.PI;
-            MovePieces();
             board.currentState = GameState.wait;
+            MovePieces();
         }
         else
         {
@@ -136,44 +136,30 @@ public class CharController : MonoBehaviour
         }
     }
 
+    void Move(Vector2 direction)
+    {
+        otherChar = board.allChars[column + (int)direction.x, row + (int)direction.y];
+        previousRow = row;
+        previousColumn = column;
+
+        otherChar.GetComponent<CharController>().column += -1 * (int)direction.x;
+        otherChar.GetComponent<CharController>().row += -1 * (int)direction.y;
+        column += (int)direction.x;
+        row += (int)direction.y;
+        StartCoroutine(CheckMove());
+    }
+
     void MovePieces()
     {
         if (swipeAngle > -45 && swipeAngle <= 45 && column < board.width - 1)
-        {
-            // Right Swipe
-            otherChar = board.allChars[column + 1, row];
-            previousRow = row;
-            previousColumn = column;
-            otherChar.GetComponent<CharController>().column -= 1;
-            column += 1;
-        }
+            Move(Vector2.right);
         else if (swipeAngle > 45 && swipeAngle <= 135 && row < board.height - 1)
-        {
-            // Up Swipe
-            otherChar = board.allChars[column, row + 1];
-            previousRow = row;
-            previousColumn = column;
-            otherChar.GetComponent<CharController>().row -= 1;
-            row += 1;
-        }
+            Move(Vector2.up);
         else if ((swipeAngle > 135 || swipeAngle <= -135) && column > 0)
-        {
-            // Left Swipe
-            otherChar = board.allChars[column - 1, row];
-            previousRow = row;
-            previousColumn = column;
-            otherChar.GetComponent<CharController>().column += 1;
-            column -= 1;
-        }
+            Move(Vector2.left);
         else if (swipeAngle < -45 && swipeAngle >= -135 && row > 0)
-        {
-            // Down Swipe
-            otherChar = board.allChars[column, row - 1];
-            previousRow = row;
-            previousColumn = column;
-            otherChar.GetComponent<CharController>().row += 1;
-            row -= 1;
-        }
-        StartCoroutine(CheckMove());
+            Move(Vector2.down);        
+        else
+            board.currentState = GameState.move;
     }
 }

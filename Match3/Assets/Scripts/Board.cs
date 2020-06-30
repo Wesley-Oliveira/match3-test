@@ -51,7 +51,6 @@ public class Board : MonoBehaviour
                 {
                     charToUse = Random.Range(0, chars.Length);
                     maxIterantions++;
-                    Debug.Log(maxIterantions);
                 }
                 maxIterantions = 0;
 
@@ -130,7 +129,7 @@ public class Board : MonoBehaviour
         StartCoroutine(FillBoard());
     }
 
-    private void RefilBoard()
+    private void RefillBoard()
     {
         for (int i = 0; i < width; i++)
         {
@@ -169,7 +168,7 @@ public class Board : MonoBehaviour
 
     private IEnumerator FillBoard()
     {
-        RefilBoard();
+        RefillBoard();
         yield return new WaitForSeconds(.5f);
 
         while (MatchesOnBoard())
@@ -177,7 +176,7 @@ public class Board : MonoBehaviour
             yield return new WaitForSeconds(.5f);
             DestroyMatches();
         }
-
+        findMatches.currentMatches.Clear();
         yield return new WaitForSeconds(.5f);
         currentState = GameState.move;
     }
