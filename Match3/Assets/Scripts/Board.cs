@@ -1,10 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
-
-/// <Refactor>
-/// Procurar uma solução mais otimizada para trabalhar com matrizes
-/// </Refactor>
 
 public enum GameState
 {
@@ -18,18 +15,21 @@ public class Board : MonoBehaviour
     public int width;
     public int height;
     public int offSet;
-    public GameObject tilePrefab;
     public GameObject[] chars;
-    private BackgroundTile[,] allTiles;
+    private bool[,] blankSpaces;
+
     public GameObject[,] allChars;
     public GameObject destroyEffect;
 
     private Finder findMatches;
+    private _GC _gc;
+
     void Start()
     {
         findMatches = FindObjectOfType<Finder>() as Finder;
-        allTiles = new BackgroundTile[width, height];
+        _gc = FindObjectOfType(typeof(_GC)) as _GC;
         allChars = new GameObject[width, height];
+        blankSpaces = new bool[width, height];
         SetUp();
     }
 
@@ -40,10 +40,6 @@ public class Board : MonoBehaviour
             for (int j = 0; j < height; j++)
             {
                 Vector2 tempPosition = new Vector2(i, j + offSet);
-                GameObject backgroundTile = Instantiate(tilePrefab, tempPosition, Quaternion.identity) as GameObject;
-                backgroundTile.transform.parent = this.transform;
-                backgroundTile.name = "(" + i + ", " + j + ") - BG";
-
                 int charToUse = Random.Range(0, chars.Length);
 
                 int maxIterantions = 0;
@@ -93,7 +89,10 @@ public class Board : MonoBehaviour
         {
             Instantiate(destroyEffect, allChars[column, row].transform.position, Quaternion.identity);
             Destroy(allChars[column, row]);
+            _gc.count++;
+            _gc.Scored(_gc.count);
             allChars[column, row] = null;
+            
         }
     }
 
@@ -178,6 +177,158 @@ public class Board : MonoBehaviour
         }
         findMatches.currentMatches.Clear();
         yield return new WaitForSeconds(.5f);
+
+        if (IsDeadLocked())
+        {
+            Debug.Log("Deadlocked!!");
+            ShufflelBoard();
+        }
+
         currentState = GameState.move;
+    }
+
+    private void SwitchPieces(int column, int row, Vector2 direction)
+    {
+        //Take the second piece and save it in a holder
+        GameObject holder = allChars[column + (int)direction.x, row + (int)direction.y] as GameObject;
+        //switching the first char to be the second position
+        allChars[column + (int)direction.x, row + (int)direction.y] = allChars[column, row];
+        //Set the first char to be  the second char
+        allChars[column, row] = holder;
+    }
+
+    private bool CheckForMatches()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if (allChars[i, j] != null)
+                {
+                    //Make sure that one and two to the right are in the board
+                    if (i < width - 2) //
+                    {
+                        //Check if the chars to the right and two to the right exist
+                        if (allChars[i + 1, j] != null && allChars[i + 2, j] != null)
+                        {
+                            if (allChars[i + 1, j].tag == allChars[i, j].tag && allChars[i + 2, j].tag == allChars[i, j].tag)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    
+                    if (j < height - 2)//
+                    {
+                        //Check if the chars above exist
+                        if (allChars[i, j + 1] != null && allChars[i, j + 2] != null)
+                        {
+                            if (allChars[i, j + 1].tag == allChars[i, j].tag && allChars[i, j + 2].tag == allChars[i, j].tag)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private bool SwitchAndCheck(int column, int row, Vector2 direction)
+    {
+        SwitchPieces(column, row, direction);
+        if (CheckForMatches())
+        {
+            SwitchPieces(column, row, direction);
+            return true;
+        }
+        SwitchPieces(column, row, direction);
+        return false;
+    }
+
+    private bool IsDeadLocked()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if(allChars[i, j] != null)
+                {
+                    if(i< width - 1)
+                    {
+                        if (SwitchAndCheck(i, j, Vector2.right))
+                        {
+                            return false;
+                        }
+                    }
+
+                    if (j < height - 1)
+                    {
+                        if (SwitchAndCheck(i, j, Vector2.up))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private void ShufflelBoard()
+    {
+        //Create a list of game objects
+        List<GameObject> newBoard = new List<GameObject>();
+
+        //add every pieces to this list
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if (allChars[i, j] != null)
+                {
+                    newBoard.Add(allChars[i, j]);
+                }
+            }
+        }
+
+        //for every spot on the board
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                //if this spot shouldn't be blank
+                if (!blankSpaces[i, j])
+                {
+                    //Pick a random number
+                    int pieceToUse = Random.Range(0, newBoard.Count);
+                                       
+                    int maxIterantions = 0;
+                    while (MatchesAt(i, j, newBoard[pieceToUse]) && maxIterantions < 100)
+                    {
+                        pieceToUse = Random.Range(0, newBoard.Count);
+                        maxIterantions++;
+                    }
+                    //Make a container for the piece
+                    CharController piece = newBoard[pieceToUse].GetComponent<CharController>();
+                    maxIterantions = 0;
+
+                    //Assign the column to the piece
+                    piece.column = i;
+                    //assign the row to the piece
+                    piece.row = j;
+                    //Fill in the chars array with this new piece
+                    allChars[i, j] = newBoard[pieceToUse];
+                    //Remove it from the list
+                    newBoard.Remove(newBoard[pieceToUse]);
+                }
+            }
+        }
+        //Check if it's still deadlocked
+        if (IsDeadLocked())
+        {
+            ShufflelBoard();
+        }
     }
 }
