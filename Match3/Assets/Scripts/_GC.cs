@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class _GC : MonoBehaviour
 {
@@ -20,12 +20,19 @@ public class _GC : MonoBehaviour
     private int maxScore;
     private int round;
 
+    [Header("Audio")]
+    public AudioSource sfxSource;
+    public AudioSource musicSource;
+    public AudioClip sfxSwapPieces;
+    public AudioClip sfxMatch;
 
     void Start()
     {
+        PlayerPrefs.SetInt("Score", 0);
+
         time = 121;
         tempTime = 0f;
-        barSize = 2.4f;
+        barSize = 228f;
         score = 0;
         maxScore = 5;
         round = 1;
@@ -43,18 +50,20 @@ public class _GC : MonoBehaviour
         {
             aux = (int)time;
             timeTxt.text = aux.ToString();
-            barSize = 2.4f - ((tempTime / 120) * 2.4f);
-            barTime.transform.localScale = new Vector3(barSize, 1.2388f, 1.2388f);
+            barSize = 228f - ((tempTime / 120) * 228f);
+            barTime.transform.localScale = new Vector3(barSize, 117f, 117f);
         }
         else
         {
-            Debug.Log("Game over");
+            timeTxt.text = "0";
+            PlayerPrefs.SetInt("Score", round);
+            StartCoroutine("GameOver");
         }
     }
 
     public void Scored(int countPieces)
     {
-        if(score < maxScore)
+        if(score < maxScore - 1)
         {
             if (countPieces > 2 && countPieces < 9)
             {
@@ -72,8 +81,23 @@ public class _GC : MonoBehaviour
             tempTime = 0;
             roundTxt.text = "Round: #" + round;
             scoreTxt.text = "Score: " + score + " / " + maxScore;
+            barSize = 158f;
         }
     }
 
+    public IEnumerator GameOver()
+    {
+        yield return new WaitForSeconds(.5f);
+        SceneManager.LoadScene("GameOver");
+    }
 
+    public void playSwapPiecesSFX()
+    {
+        sfxSource.PlayOneShot(sfxSwapPieces, 1f);
+    }
+
+    public void playMatchSFX()
+    {
+        sfxSource.PlayOneShot(sfxMatch, 1f);
+    }
 }

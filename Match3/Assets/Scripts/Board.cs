@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public enum GameState
 {
     wait,
-    move
+    move,
+    selected
 }
 
 public class Board : MonoBehaviour
@@ -26,13 +26,14 @@ public class Board : MonoBehaviour
 
     void Start()
     {
-        findMatches = FindObjectOfType<Finder>() as Finder;
+        findMatches = FindObjectOfType(typeof(Finder)) as Finder;
         _gc = FindObjectOfType(typeof(_GC)) as _GC;
         allChars = new GameObject[width, height];
         blankSpaces = new bool[width, height];
         SetUp();
     }
 
+    // Construindo o tabuleiro e adicionando personagens
     private void SetUp()
     {
         for(int i = 0; i < width; i++)
@@ -61,6 +62,7 @@ public class Board : MonoBehaviour
         }
     }
 
+    // Verifica se existem 3 personagens do mesmo tipo em uma mesma linha ou coluna
     private bool MatchesAt(int column, int row, GameObject piece)
     {
         if(column > 1 && row > 1)
@@ -79,23 +81,24 @@ public class Board : MonoBehaviour
                 if (allChars[column - 1, row].tag == piece.tag && allChars[column - 2, row].tag == piece.tag)
                     return true;
         }
-
         return false;
     }
 
+    // Realiza a destruição de personagens que fizeram um match, instancia efeito e adiciona pontuação
     private void DestroyMatchesAt(int column, int row)
     {
         if(allChars[column, row].GetComponent<CharController>().isMatched)
         {
             Instantiate(destroyEffect, allChars[column, row].transform.position, Quaternion.identity);
-            Destroy(allChars[column, row]);
             _gc.count++;
             _gc.Scored(_gc.count);
-            allChars[column, row] = null;
-            
+            Destroy(allChars[column, row]);
+            _gc.playMatchSFX();
+            allChars[column, row] = null;            
         }
     }
 
+    // Faz a validação de campo e se for válido, passa a posição para a função que destrói o objeto. Também inicializa coroutine para adicionar decrementar uma determinada posição da linha
     public void DestroyMatches()
     {
         for (int i = 0; i < width; i++)
@@ -106,10 +109,10 @@ public class Board : MonoBehaviour
         StartCoroutine(DecreaseRow());
     }
 
+    // Realiza as verificações necessárias para reduzir uma linha e inicializa a coroutine responsável por gerar novos personagens adicionando no tabuleiro e validando
     private IEnumerator DecreaseRow()
     {
         int nullCount = 0;
-
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
@@ -128,6 +131,7 @@ public class Board : MonoBehaviour
         StartCoroutine(FillBoard());
     }
 
+    // Spawna novos personagens onde existir vaga no tabuleiro
     private void RefillBoard()
     {
         for (int i = 0; i < width; i++)
@@ -149,6 +153,7 @@ public class Board : MonoBehaviour
         }
     }
 
+    // Valida se existe um match, retornando true ou false
     private bool MatchesOnBoard()
     {
         for (int i = 0; i < width; i++)
@@ -156,15 +161,14 @@ public class Board : MonoBehaviour
             for (int j = 0; j < height; j++)
             {
                 if (allChars[i, j] != null)
-                {
                     if (allChars[i, j].GetComponent<CharController>().isMatched)
                         return true;
-                }
             }
         }
         return false;
     }
 
+    // Responsável por preencher o tabuleiro, verifica deadlock, 
     private IEnumerator FillBoard()
     {
         RefillBoard();
@@ -180,13 +184,12 @@ public class Board : MonoBehaviour
 
         if (IsDeadLocked())
         {
-            Debug.Log("Deadlocked!!");
-            ShufflelBoard();
+            ShuffleBoard();
         }
-
         currentState = GameState.move;
     }
 
+    // Move o personagem de lugar
     private void SwitchPieces(int column, int row, Vector2 direction)
     {
         //Take the second piece and save it in a holder
@@ -197,6 +200,7 @@ public class Board : MonoBehaviour
         allChars[column, row] = holder;
     }
 
+    // Verifica se existe um match entre 3 objetos horizontal ou vertical
     private bool CheckForMatches()
     {
         for (int i = 0; i < width; i++)
@@ -206,28 +210,20 @@ public class Board : MonoBehaviour
                 if (allChars[i, j] != null)
                 {
                     //Make sure that one and two to the right are in the board
-                    if (i < width - 2) //
+                    if (i < width - 2)
                     {
                         //Check if the chars to the right and two to the right exist
                         if (allChars[i + 1, j] != null && allChars[i + 2, j] != null)
-                        {
                             if (allChars[i + 1, j].tag == allChars[i, j].tag && allChars[i + 2, j].tag == allChars[i, j].tag)
-                            {
                                 return true;
-                            }
-                        }
                     }
                     
-                    if (j < height - 2)//
+                    if (j < height - 2)
                     {
                         //Check if the chars above exist
                         if (allChars[i, j + 1] != null && allChars[i, j + 2] != null)
-                        {
                             if (allChars[i, j + 1].tag == allChars[i, j].tag && allChars[i, j + 2].tag == allChars[i, j].tag)
-                            {
                                 return true;
-                            }
-                        }
                     }
                 }
             }
@@ -235,6 +231,7 @@ public class Board : MonoBehaviour
         return false;
     }
 
+    // Realiza a mudança de personagem de local e verifica se houve um match
     private bool SwitchAndCheck(int column, int row, Vector2 direction)
     {
         SwitchPieces(column, row, direction);
@@ -247,6 +244,7 @@ public class Board : MonoBehaviour
         return false;
     }
 
+    // Realiza a verificação se existe possibilidade de realização de um match
     private bool IsDeadLocked()
     {
         for (int i = 0; i < width; i++)
@@ -256,27 +254,20 @@ public class Board : MonoBehaviour
                 if(allChars[i, j] != null)
                 {
                     if(i< width - 1)
-                    {
                         if (SwitchAndCheck(i, j, Vector2.right))
-                        {
                             return false;
-                        }
-                    }
 
                     if (j < height - 1)
-                    {
                         if (SwitchAndCheck(i, j, Vector2.up))
-                        {
                             return false;
-                        }
-                    }
                 }
             }
         }
         return true;
     }
 
-    private void ShufflelBoard()
+    // Embaralha o tabuleiro
+    private void ShuffleBoard()
     {
         //Create a list of game objects
         List<GameObject> newBoard = new List<GameObject>();
@@ -328,7 +319,7 @@ public class Board : MonoBehaviour
         //Check if it's still deadlocked
         if (IsDeadLocked())
         {
-            ShufflelBoard();
+            ShuffleBoard();
         }
     }
 }

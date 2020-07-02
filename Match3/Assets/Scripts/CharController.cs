@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <BugList>
-/// Econtrar uma forma de não deixar o jogo morrer quando o jogador puxar um char para fora do tamanho do tabuleiro
-/// </BugList>
 public class CharController : MonoBehaviour
 {
     [Header("Board Variables")]
@@ -28,11 +25,13 @@ public class CharController : MonoBehaviour
     public float swipeResist = 1f;
 
     private Finder finderMatches;
+    private _GC _gc;
 
     void Start()
     {
         board = FindObjectOfType<Board>() as Board;
         finderMatches = FindObjectOfType<Finder>() as Finder;
+        _gc = FindObjectOfType(typeof(_GC)) as _GC;
     }
 
     void Update()
@@ -108,6 +107,10 @@ public class CharController : MonoBehaviour
     {
         if (board.currentState == GameState.move)
             firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        /*else if(board.currentState == GameState.selected)
+        {
+
+        }*/
     }
 
     private void OnMouseUp()
@@ -116,6 +119,7 @@ public class CharController : MonoBehaviour
         {
             finalTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             CalculateAngle();
+            _gc.playSwapPiecesSFX();
         }
     }
 
@@ -132,6 +136,9 @@ public class CharController : MonoBehaviour
         }
         else
         {
+            /*//condition here
+            board.currentState = GameState.selected;
+            */
             board.currentState = GameState.move;
         }
     }
