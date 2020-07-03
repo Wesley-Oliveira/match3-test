@@ -2,9 +2,13 @@
 
 Match3 is a tile-matching game where the player must create sequences of 3 or more pieces of the same kind.
 
+
+
 <p align="center">
   <img src="https://github.com/Wesley-Oliveira/match3-test/blob/master/match3Screenshot.png">
 </p>
+
+
 
 ##Game concept
 
