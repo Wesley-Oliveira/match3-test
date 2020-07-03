@@ -1339,7 +1339,12 @@ MonoBehaviour:
   sfxSource: {fileID: 1121753140}
   musicSource: {fileID: 788853915}
   sfxSwapPieces: {fileID: 8300000, guid: 36b4139f0a5d9f144aef22e0a8e3cda5, type: 3}
+  sfxSelectPiece: {fileID: 8300000, guid: 8c5ece13d3a05dc4f8c970e0a7648a93, type: 3}
   sfxMatch: {fileID: 8300000, guid: c2a0bdfbf58d6a04d9089fab30053419, type: 3}
+  aux1: {x: 0, y: 0}
+  aux2: {x: 0, y: 0}
+  auxCount: 0
+  auxObject: {fileID: 0}
 --- !u!4 &1914511386
 Transform:
   m_ObjectHideFlags: 0

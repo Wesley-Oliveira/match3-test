@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CharController : MonoBehaviour
@@ -81,8 +82,9 @@ public class CharController : MonoBehaviour
 
     public IEnumerator CheckMove()
     {
-        yield return new WaitForSeconds(.5f);
-
+        _gc.playSwapPiecesSFX();
+        yield return new WaitForSeconds(.7f);
+        _gc.auxObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1f);
         if (otherChar != null)
         {
             if (!isMatched && !otherChar.GetComponent<CharController>().isMatched)
@@ -91,9 +93,7 @@ public class CharController : MonoBehaviour
                 otherChar.GetComponent<CharController>().column = column;
                 row = previousRow;
                 column = previousColumn;
-
-                yield return new WaitForSeconds(.5f);
-                board.currentState = GameState.move;
+                _gc.playSwapPiecesSFX();
             }
             else
             {
@@ -105,12 +105,25 @@ public class CharController : MonoBehaviour
 
     private void OnMouseDown()
     {
+        print(_gc.auxCount);
+        print(board.currentState);
         if (board.currentState == GameState.move)
-            firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        /*else if(board.currentState == GameState.selected)
         {
+            firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            _gc.auxObject = this.gameObject;
+            gameObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.5f);
 
-        }*/
+            if (_gc.auxCount == 0)
+            {
+                _gc.aux1 = firstTouchPosition;
+                _gc.auxCount++;
+            }
+        }
+        else if (board.currentState == GameState.selected)
+        {
+            _gc.aux2 = firstTouchPosition;
+            _gc.auxCount--;
+        }
     }
 
     private void OnMouseUp()
@@ -119,7 +132,12 @@ public class CharController : MonoBehaviour
         {
             finalTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             CalculateAngle();
-            _gc.playSwapPiecesSFX();
+            _gc.playSelectPieceSFX();
+        }
+        else if (board.currentState == GameState.selected)//
+        {
+            MovePiecesSelected();
+            _gc.playSelectPieceSFX();
         }
     }
 
@@ -131,16 +149,13 @@ public class CharController : MonoBehaviour
                 finalTouchPosition.y - firstTouchPosition.y,
                 finalTouchPosition.x - firstTouchPosition.x
             ) * 180 / Mathf.PI;
+
             board.currentState = GameState.wait;
+            _gc.auxCount = 0;
             MovePieces();
         }
         else
-        {
-            /*//condition here
-            board.currentState = GameState.selected;
-            */
-            board.currentState = GameState.move;
-        }
+            board.currentState = GameState.selected;//
     }
 
     void Move(Vector2 direction)
@@ -165,8 +180,46 @@ public class CharController : MonoBehaviour
         else if ((swipeAngle > 135 || swipeAngle <= -135) && column > 0)
             Move(Vector2.left);
         else if (swipeAngle < -45 && swipeAngle >= -135 && row > 0)
-            Move(Vector2.down);        
+            Move(Vector2.down);
         else
+        {
+            _gc.auxObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1f);
+            print("zerou MovePieces");
+            _gc.auxCount = 0;
             board.currentState = GameState.move;
+        }
+    }
+
+    void MovePiecesSelected()
+    {
+        board.currentState = GameState.wait;
+        if (Mathf.Abs(_gc.aux2.y - _gc.aux1.y) > swipeResist || Mathf.Abs(_gc.aux2.x - _gc.aux1.x) > swipeResist)
+        {
+            int previousColumn = _gc.auxObject.GetComponent<CharController>().column;
+            int previousRow = _gc.auxObject.GetComponent<CharController>().row;
+
+            //identificar seleção a direita
+            if (column - previousColumn == 1 && previousRow == row)
+                Move(-Vector2.right);
+            else if (column - previousColumn == -1 && previousRow == row)
+                Move(-Vector2.left);
+            else if (row - previousRow == 1 && previousColumn == column)
+                Move(-Vector2.up);
+            else if (row - previousRow == -1 && previousColumn == column)
+                Move(-Vector2.down);
+            else
+            {
+                _gc.auxObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1f);
+                board.currentState = GameState.move;
+            }
+        }
+        else
+        {
+            //fora do range de movimento
+            _gc.auxObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1f);
+            print("zerou movePiecesselected");
+            _gc.auxCount = 0;
+            board.currentState = GameState.move;
+        }
     }
 }

@@ -101,6 +101,7 @@ public class Board : MonoBehaviour
     // Faz a validação de campo e se for válido, passa a posição para a função que destrói o objeto. Também inicializa coroutine para adicionar decrementar uma determinada posição da linha
     public void DestroyMatches()
     {
+        currentState = GameState.wait;
         for (int i = 0; i < width; i++)
             for (int j = 0; j < height; j++)
                 if(allChars[i, j] != null)
@@ -127,13 +128,14 @@ public class Board : MonoBehaviour
             }
             nullCount = 0;
         }
-        yield return new WaitForSeconds(.4f);
+        yield return new WaitForSeconds(.5f);
         StartCoroutine(FillBoard());
     }
 
     // Spawna novos personagens onde existir vaga no tabuleiro
     private void RefillBoard()
     {
+        currentState = GameState.wait;
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
@@ -184,7 +186,12 @@ public class Board : MonoBehaviour
 
         if (IsDeadLocked())
         {
+            currentState = GameState.wait;
             ShuffleBoard();
+            _gc.aux1 = Vector2.zero;
+            _gc.aux2 = Vector2.zero;
+            _gc.auxCount = 0;
+            _gc.auxObject = null;
         }
         currentState = GameState.move;
     }
@@ -266,6 +273,9 @@ public class Board : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     // Embaralha o tabuleiro
     private void ShuffleBoard()
     {

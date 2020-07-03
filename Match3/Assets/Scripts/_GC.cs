@@ -24,7 +24,14 @@ public class _GC : MonoBehaviour
     public AudioSource sfxSource;
     public AudioSource musicSource;
     public AudioClip sfxSwapPieces;
+    public AudioClip sfxSelectPiece;
     public AudioClip sfxMatch;
+
+    [Header("Previous Object")]
+    public Vector2 aux1;
+    public Vector2 aux2;
+    public int auxCount;
+    public GameObject auxObject;
 
     void Start()
     {
@@ -94,6 +101,11 @@ public class _GC : MonoBehaviour
     public void playSwapPiecesSFX()
     {
         sfxSource.PlayOneShot(sfxSwapPieces, 1f);
+    }
+
+    public void playSelectPieceSFX()
+    {
+        sfxSource.PlayOneShot(sfxSelectPiece, 1f);
     }
 
     public void playMatchSFX()
