@@ -1,14 +1,10 @@
 # Match3-test
 
-Match3 is a tile-matching game where the player must create sequences of 3 or more pieces of the same kind.
-
-
+Match3 is a tile matching game in which the player must create sequences of 3 or more tiles of the same type.
 
 <p align="center">
   <img src="https://github.com/Wesley-Oliveira/match3-test/blob/master/match3Screenshot.png">
 </p>
-
-
 
 ## Game concept
 
