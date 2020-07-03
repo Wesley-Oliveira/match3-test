@@ -88,8 +88,10 @@ public class CharController : MonoBehaviour
         }
     }
 
+    // Coroutine that validates if the char can move or not and checks if there was a match
     public IEnumerator CheckMove()
     {
+        board.currentState = GameState.wait;
         _gc.auxCount = 0;
         _gc.playSwapPiecesSFX();
         yield return new WaitForSeconds(.7f);
@@ -112,6 +114,7 @@ public class CharController : MonoBehaviour
         board.currentState = GameState.move;
     }
 
+    // Capture of entries and obtaining positions initiated for movement
     private void OnMouseDown()
     {
         if (board.currentState == GameState.move && _gc.auxCount == 0)
@@ -133,6 +136,7 @@ public class CharController : MonoBehaviour
         }
     }
 
+    // Capturing output and obtaining  the final positions for movement
     private void OnMouseUp()
     {
         if (board.currentState == GameState.move)
@@ -148,6 +152,7 @@ public class CharController : MonoBehaviour
         }
     }
 
+    //  Performing the angle calculation based on the input and output values
     void CalculateAngle()
     {
         if (Mathf.Abs(finalTouchPosition.y - firstTouchPosition.y) > swipeResist || Mathf.Abs(finalTouchPosition.x - firstTouchPosition.x) > swipeResist)
@@ -162,9 +167,10 @@ public class CharController : MonoBehaviour
             MovePieces();
         }
         else
-            board.currentState = GameState.selected;//
+            board.currentState = GameState.selected;
     }
 
+    // Character movement
     void Move(Vector2 direction)
     {
         board.currentState = GameState.wait;
@@ -180,6 +186,7 @@ public class CharController : MonoBehaviour
         StartCoroutine(CheckMove());
     }
 
+    // Defining which direction the char moved, based on the angle
     void MovePieces()
     {
         if (swipeAngle > -45 && swipeAngle <= 45 && column < board.width - 1)
@@ -198,6 +205,7 @@ public class CharController : MonoBehaviour
         }
     }
 
+    // Defining which direction the char moved, based on selection
     void MovePiecesSelected()
     {
         board.currentState = GameState.wait;

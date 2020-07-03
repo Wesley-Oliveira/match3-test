@@ -13,11 +13,13 @@ public class Finder : MonoBehaviour
         board = FindObjectOfType<Board>();
     }
 
+    // Start coroutine FindAllMatchesCo
     public void FindAllMatches()
     {
         StartCoroutine(FindAllMatchesCo());
     }
 
+    // Add to list matches
     private void AddToListAndMatch(GameObject char_)
     {
         if (!currentMatches.Contains(char_))
@@ -26,6 +28,7 @@ public class Finder : MonoBehaviour
         char_.GetComponent<CharController>().isMatched = true;
     }
 
+    // Get chars and add list
     private void GetNearbyPieces(GameObject char1, GameObject char2, GameObject char3)
     {
         AddToListAndMatch(char1);
@@ -33,6 +36,7 @@ public class Finder : MonoBehaviour
         AddToListAndMatch(char3);
     }
 
+    // Find all matches possible
     private IEnumerator FindAllMatchesCo()
     {
         yield return new WaitForSeconds(.2f);
