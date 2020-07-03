@@ -16,6 +16,9 @@ public class _GC : MonoBehaviour
     private float barSize;
     private int aux;
 
+    private float verify;
+    private Board board;
+
     private int score;
     private int maxScore;
     private int round;
@@ -33,10 +36,11 @@ public class _GC : MonoBehaviour
     public int auxCount;
     public GameObject auxObject;
 
+    // Start variable values
     void Start()
     {
         PlayerPrefs.SetInt("Score", 0);
-
+        verify = 0;
         time = 121;
         tempTime = 0f;
         barSize = 228f;
@@ -46,6 +50,8 @@ public class _GC : MonoBehaviour
 
         scoreTxt.text = "Score: " + score + " / " + maxScore;
         roundTxt.text = "Round: #" + round;
+
+        board = FindObjectOfType<Board>() as Board;
     }
 
     void Update()
@@ -53,6 +59,7 @@ public class _GC : MonoBehaviour
         tempTime += Time.deltaTime;
         time -= Time.deltaTime;
 
+        // Timer count and decrement TimeBar
         if (tempTime <= 120)
         {
             aux = (int)time;
@@ -64,10 +71,30 @@ public class _GC : MonoBehaviour
         {
             timeTxt.text = "0";
             PlayerPrefs.SetInt("Score", round);
-            StartCoroutine("GameOver");
+            StartCoroutine(GameOver());
+        }
+
+        // Verify deadstate and unlock
+        if(board.currentState == GameState.wait)
+        {
+            verify += Time.deltaTime;
+            if (verify >= 3.5f)
+            {
+                board.currentState = GameState.move;
+                aux1 = Vector2.zero;
+                aux2 = Vector2.zero;
+                auxCount = 0;
+                auxObject = null;
+                verify = 0;
+            }
+        }
+        else
+        {
+            verify = 0;
         }
     }
 
+    // Score controller
     public void Scored(int countPieces)
     {
         if(score < maxScore - 1)
@@ -92,22 +119,22 @@ public class _GC : MonoBehaviour
         }
     }
 
+    // Coroutine for load a gameover scene
     public IEnumerator GameOver()
     {
         yield return new WaitForSeconds(.5f);
         SceneManager.LoadScene("GameOver");
     }
 
+    // Play a specific sfx
     public void playSwapPiecesSFX()
     {
         sfxSource.PlayOneShot(sfxSwapPieces, 1f);
     }
-
     public void playSelectPieceSFX()
     {
         sfxSource.PlayOneShot(sfxSelectPiece, 1f);
     }
-
     public void playMatchSFX()
     {
         sfxSource.PlayOneShot(sfxMatch, 1f);

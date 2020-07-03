@@ -7,7 +7,7 @@ public class Score : MonoBehaviour
 {
     public Text score;
 
-    // Start is called before the first frame update
+    // Used for set the final score on the scene game over
     void Start()
     {
         score.text = "SCORE - " + PlayerPrefs.GetInt("Score").ToString();

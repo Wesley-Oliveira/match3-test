@@ -9,7 +9,7 @@ public class SceneController : MonoBehaviour
     public AudioSource sfxSource;
     public AudioClip sfxSelect;
 
-    // Responsável por abrir a scene com o nome que estiver configurado
+    // Open a scene with delay 0.5f
     public IEnumerator Delay(string nameScene)
     {
         sfxSource.PlayOneShot(sfxSelect, 1f);
@@ -19,6 +19,6 @@ public class SceneController : MonoBehaviour
 
     public void OpenScene(string nameScene)
     {
-        StartCoroutine("Delay", nameScene);
+        StartCoroutine(Delay(nameScene));
     }
 }

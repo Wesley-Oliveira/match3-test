@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 public class CharController : MonoBehaviour
@@ -28,6 +29,7 @@ public class CharController : MonoBehaviour
     private Finder finderMatches;
     private _GC _gc;
 
+    // Start variable values
     void Start()
     {
         board = FindObjectOfType<Board>() as Board;
@@ -78,10 +80,17 @@ public class CharController : MonoBehaviour
             tempPosition = new Vector2(transform.position.x, targetY);
             transform.position = tempPosition;
         }
+
+        if(_gc.auxCount == -1)
+        {
+            board.currentState = GameState.move;
+            _gc.auxCount = 0;
+        }
     }
 
     public IEnumerator CheckMove()
     {
+        _gc.auxCount = 0;
         _gc.playSwapPiecesSFX();
         yield return new WaitForSeconds(.7f);
         _gc.auxObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1f);
@@ -105,9 +114,7 @@ public class CharController : MonoBehaviour
 
     private void OnMouseDown()
     {
-        print(_gc.auxCount);
-        print(board.currentState);
-        if (board.currentState == GameState.move)
+        if (board.currentState == GameState.move && _gc.auxCount == 0)
         {
             firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             _gc.auxObject = this.gameObject;
@@ -134,7 +141,7 @@ public class CharController : MonoBehaviour
             CalculateAngle();
             _gc.playSelectPieceSFX();
         }
-        else if (board.currentState == GameState.selected)//
+        else if (board.currentState == GameState.selected)
         {
             MovePiecesSelected();
             _gc.playSelectPieceSFX();
@@ -160,6 +167,8 @@ public class CharController : MonoBehaviour
 
     void Move(Vector2 direction)
     {
+        board.currentState = GameState.wait;
+        _gc.auxCount = 0;
         otherChar = board.allChars[column + (int)direction.x, row + (int)direction.y];
         previousRow = row;
         previousColumn = column;
@@ -184,7 +193,6 @@ public class CharController : MonoBehaviour
         else
         {
             _gc.auxObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1f);
-            print("zerou MovePieces");
             _gc.auxCount = 0;
             board.currentState = GameState.move;
         }
@@ -198,7 +206,6 @@ public class CharController : MonoBehaviour
             int previousColumn = _gc.auxObject.GetComponent<CharController>().column;
             int previousRow = _gc.auxObject.GetComponent<CharController>().row;
 
-            //identificar seleção a direita
             if (column - previousColumn == 1 && previousRow == row)
                 Move(-Vector2.right);
             else if (column - previousColumn == -1 && previousRow == row)
@@ -215,9 +222,7 @@ public class CharController : MonoBehaviour
         }
         else
         {
-            //fora do range de movimento
             _gc.auxObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1f);
-            print("zerou movePiecesselected");
             _gc.auxCount = 0;
             board.currentState = GameState.move;
         }

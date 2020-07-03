@@ -7,6 +7,7 @@ public class Finder : MonoBehaviour
     private Board board;
     public List<GameObject> currentMatches = new List<GameObject>();
 
+    // Start variable values
     void Start()
     {
         board = FindObjectOfType<Board>();

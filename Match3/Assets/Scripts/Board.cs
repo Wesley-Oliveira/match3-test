@@ -24,6 +24,7 @@ public class Board : MonoBehaviour
     private Finder findMatches;
     private _GC _gc;
 
+    // Start variable values
     void Start()
     {
         findMatches = FindObjectOfType(typeof(Finder)) as Finder;
@@ -65,7 +66,7 @@ public class Board : MonoBehaviour
     // Verifica se existem 3 personagens do mesmo tipo em uma mesma linha ou coluna
     private bool MatchesAt(int column, int row, GameObject piece)
     {
-        if(column > 1 && row > 1)
+        if (column > 1 && row > 1)
         {
             if (allChars[column - 1, row].tag == piece.tag && allChars[column - 2, row].tag == piece.tag)
                 return true;
@@ -87,7 +88,7 @@ public class Board : MonoBehaviour
     // Realiza a destruição de personagens que fizeram um match, instancia efeito e adiciona pontuação
     private void DestroyMatchesAt(int column, int row)
     {
-        if(allChars[column, row].GetComponent<CharController>().isMatched)
+        if (allChars[column, row].GetComponent<CharController>().isMatched)
         {
             Instantiate(destroyEffect, allChars[column, row].transform.position, Quaternion.identity);
             _gc.count++;
@@ -136,6 +137,7 @@ public class Board : MonoBehaviour
     private void RefillBoard()
     {
         currentState = GameState.wait;
+        _gc.auxCount = 0;
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
@@ -196,7 +198,6 @@ public class Board : MonoBehaviour
         currentState = GameState.move;
     }
 
-    // Move o personagem de lugar
     private void SwitchPieces(int column, int row, Vector2 direction)
     {
         //Take the second piece and save it in a holder
@@ -273,9 +274,6 @@ public class Board : MonoBehaviour
         return true;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
     // Embaralha o tabuleiro
     private void ShuffleBoard()
     {
@@ -332,4 +330,5 @@ public class Board : MonoBehaviour
             ShuffleBoard();
         }
     }
+
 }
